@@ -44,8 +44,8 @@ def tf_batch_to_canvas(X, cols: int = None):
         rows = math.ceil(N / cols)
     n_gray_tiles = cols * rows - N
     if n_gray_tiles > 0:
-        gray_tiles = tf.zeros((n_gray_tiles, H, W, C), X.dtype)
-        X = tf.concat([X, gray_tiles], 0)
+        white_tiles = tf.ones((n_gray_tiles, H, W, C), X.dtype)
+        X = tf.concat([X, white_tiles], 0)
     image_shape = (H, W)
     n_channels = C
     return image_grid(X, (rows, cols), image_shape, n_channels)
