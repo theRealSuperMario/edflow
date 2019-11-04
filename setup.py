@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 
 # allows to get version via python setup.py --version
-__version__ = "0.2.1"
+__version__ = "0.2.0"
 
 
 setup(
@@ -39,7 +39,7 @@ setup(
         "edflow/edeval",
         "edflow/edsetup",
     ],
-    python_requires=">=3.6",
+    python_requires=">=3.5",
     classifiers=[
         "Programming Language :: Python :: 3 :: Only",
         "License :: OSI Approved :: MIT License",
