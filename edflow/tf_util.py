@@ -43,6 +43,90 @@ def make_linear_var(
     return tf.clip_by_value(linear, clip_min, clip_max)
 
 
+def make_linear_list_var(
+    step,
+    period_duration,
+    start_step,
+    start,
+    end,
+    start_value,
+    end_value,
+    clip_min=None,
+    clip_max=None,
+    **kwargs
+):
+    r"""
+    Linear from :math:`(a, \alpha)` to :math:`(b, \beta)`, i.e.
+    :math:`y = (\beta - \alpha)/(b - a) * (x - a) + \alpha`
+
+    Parameters
+    ----------
+    step : tf.Tensor
+        :math:`x`
+    period_duration: tf.Tensor
+        :math:`x`
+    start_step : int
+        :math:`a`
+    start : int
+        :math:`a`
+    end : int
+        :math:`b`
+    start_value : float
+        :math:`\alpha`
+    end_value : float
+        :math:`\beta`
+    clip_min : int
+        Minimal value returned.
+    clip_max : int
+        Maximum value returned.
+
+    Returns
+    -------
+    :math:`y` : tf.Tensor
+
+    Examples
+    --------
+
+        schedule_config = {
+            "var_type": "make_linear_list_var",
+            "options": {
+                "start": 0,
+                "end": 5,
+                "start_value": 0.0,
+                "end_value": [1, 10, 100],
+                "clip_min": 1.0e-6,
+                "clip_max": 1000,
+                "start_step": 0,
+                "period_duration": 10,
+            },
+        }
+    """
+    if clip_min is None:
+        clip_min = min(start_value, end_value)
+    if clip_max is None:
+        clip_max = max(start_value, end_value)
+
+    step = tf.to_float(step)
+    unit_step = step - start_step
+    unit_step = tf.clip_by_value(unit_step, 0.0, unit_step)
+
+    idx = tf.math.floordiv(unit_step, period_duration)
+    idx = tf.clip_by_value(idx, 0, len(end_value) - 1)
+
+    unit_step = tf.mod(unit_step, period_duration)
+
+    e = tf.to_float(tf.gather(end_value, tf.cast(idx, dtype=tf.int32)))
+    delta_value = e - start_value
+    delta_step = end - start
+    linear = (
+        delta_value / delta_step * (tf.cast(unit_step, tf.float32) - start)
+        + start_value
+    )
+    linear = tf.clip_by_value(linear, start_value, e)
+    return tf.clip_by_value(linear, clip_min, clip_max)
+
+
+
 def make_periodic_step(step, start_step: int, period_duration_in_steps: int, **kwargs):
     """
     Returns step within the unit period cycle specified
@@ -206,6 +290,7 @@ def make_var(step, var_type, options):
         "staircase": make_staircase_var,
         "periodic_linear": make_periodic_wrapper(make_linear_var),
         "periodic_staircase": make_periodic_wrapper(make_staircase_var),
+        "make_linear_list_var" : make_linear_list_var
     }
     return switch[var_type](step=step, **options)
 
