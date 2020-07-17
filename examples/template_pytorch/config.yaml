@@ -13,3 +13,15 @@ fixed_example_indices: {
   "train" : [0, 1, 2, 3],
   "validation" : [0, 1, 2, 3]
 }
+
+integrations:
+  minimal_logging:
+    image_format: png # png or jpg. jpg saves a lot of space
+  tensorboard:
+    active: False
+  wandb:
+    active: False
+
+# run with
+# cd examples
+# edflow -b template_pytorch/config.yaml -t -n template_pytorch
